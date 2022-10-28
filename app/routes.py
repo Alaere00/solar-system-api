@@ -1,50 +1,40 @@
 from crypt import methods
-from flask import Blueprint, jsonify, abort, make_response
-
-class Planet:
-    def __init__(self, id, name, description, color):
-        self.id = id
-        self.name = name
-        self.description = description
-        self.color = color
-
-    def to_json(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "color": self.color
-        }
-
-planets = [Planet(1, 'Mercury', 'closest to sun', 'gray'),
-Planet(2, 'Mars', 'closest to Earth', 'red'),
-Planet(3, 'Earth', 'our home', 'blue-green')]
-
+from app import db
+from app.models.planet import Planet
+from flask import Blueprint, jsonify, abort, make_response, request
 
 planet_bp = Blueprint("planets", __name__, url_prefix="/planets")
 
 @planet_bp.route("", methods=["GET"])
 def get_planets():
-    planet = []
-    for item in planets:
-        planet.append(item.to_json())
-
-    return jsonify(planet)
-
-def validate_id(planet_id):
-    try:
-        planet_id = int(planet_id)
-    except:
-        abort(make_response({"message": f"planet {planet_id} is invalid"}, 400))
-
-    for planet in planets:
-        if planet_id == planet.id:
-            return planet
+    planets = Planet.query.all()
+    planet_list = [planet.to_json() for planet in planets]
     
-    abort(make_response({"message": f"planet {planet_id} is not found"}, 404))
+    return jsonify(planet_list)
 
-@planet_bp.route("/<id>", methods=["GET"])
-def handle_planet(id):
-    planet = validate_id(id)
+@planet_bp.route("", methods=["POST"])
+def create_planets():
+    request_body = request.get_json()
+    new_planets = Planet(name=request_body["name"], description=request_body["description"], color=request_body["color"])
+    db.session.add(new_planets)
+    db.session.commit()
 
-    return jsonify(planet.to_json())
+    return make_response(f"Planets {new_planets.name} is created", 201)
+# @planet_bp.route("/<id>", methods=["GET"])
+# def handle_planet(id):
+#     planet = validate_id(id)
+
+#     return jsonify(planet.to_json())
+
+
+# def validate_id(planet_id):
+#     try:
+#         planet_id = int(planet_id)
+#     except:
+#         abort(make_response({"message": f"planet {planet_id} is invalid"}, 400))
+
+#     for planet in planets:
+#         if planet_id == planet.id:
+#             return planet
+    
+#     abort(make_response({"message": f"planet {planet_id} is not found"}, 404))
