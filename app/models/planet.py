@@ -6,7 +6,12 @@ class Planet(db.Model):
     description = db.Column(db.String, nullable = False)
     color = db.Column(db.String, nullable = False)
 
-
+    @classmethod
+    def create_planet(cls, planet_data):
+        return cls(name=planet_data["name"],
+                   description=planet_data["description"],
+                   color=planet_data["color"])
+    
     def to_json(self):
         return {
             "id": self.id,
