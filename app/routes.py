@@ -73,5 +73,4 @@ def delete_planet(id):
 
     db.session.delete(planet)
     db.session.commit()
-
     return make_response(f"Planet #{id} successfully deleted")

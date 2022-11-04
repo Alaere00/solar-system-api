@@ -5,6 +5,8 @@ class Planet(db.Model):
     name = db.Column(db.String, nullable = False)
     description = db.Column(db.String, nullable = False)
     color = db.Column(db.String, nullable = False)
+    moon_id = db.Column(db.Integer, db.ForeignKey('moon.id'))
+    moon = db.relationship("Moon", back_populates="planets")
 
     @classmethod
     def create_planet(cls, planet_data):
